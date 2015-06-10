@@ -36,6 +36,7 @@ Object.keys(interfaces).forEach(function(name) {
 
 proxy.createProxyServer({
   target: 'http://localhost:' + localPort,
+  xfwd: true,
   changeOrigin: true
 }).listen(proxyPort, function() {
   console.log('Listening... [ press Control-C to exit ]');
