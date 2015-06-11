@@ -39,12 +39,10 @@ Object.keys(interfaces).forEach(function(name) {
 });
 
 var transformerFunction = function(data, req) {  
-  var decoder = new StringDecoder('utf-8');
-  
-  data = decoder.write(data);  
-  data = data.replace(':'+localPort, ':'+proxyPort);
-  
-  return new Buffer(data, 'utf-8');
+  data = data.toString().replace(':'+localPort, ':'+proxyPort);
+  console.log(data);
+  //return new Buffer(data, 'utf-8');
+  return data;
 };
 
 
@@ -56,8 +54,7 @@ var proxy = httpProxy.createProxyServer({
 });
 
 proxy.on('proxyReq', function(proxyReq, req, res, options) {
-  proxyReq.setHeader('Accept-Encoding', 'identity');
-  proxyReq.setHeader('Content-Type', 'text/html; charset=utf-8');
+  proxyReq.setHeader('Accept-Encoding', 'identity');  
 });
 
 app.use(transformerProxy(transformerFunction), {match : /\.(asp)/});
