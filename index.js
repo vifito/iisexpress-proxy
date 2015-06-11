@@ -4,6 +4,7 @@ var os = require('os'),
     http = require('http'),
     httpProxy = require('http-proxy'),
     connect = require('connect'),
+    StringDecoder = require('string_decoder').StringDecoder,
     transformerProxy = require('transformer-proxy'),
     interfaces = os.networkInterfaces(),
     pkg = require('./package'),
@@ -38,8 +39,12 @@ Object.keys(interfaces).forEach(function(name) {
 });
 
 var transformerFunction = function(data, req) {  
-  data = data.toString().replace(':'+localPort, ':'+proxyPort);
-  return new Buffer(data);
+  var decoder = new StringDecoder('utf-8');
+  
+  data = decoder.write(data);  
+  data = data.replace(':'+localPort, ':'+proxyPort);
+  
+  return new Buffer(data, 'utf-8');
 };
 
 
