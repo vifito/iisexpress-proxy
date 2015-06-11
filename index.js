@@ -37,10 +37,8 @@ Object.keys(interfaces).forEach(function(name) {
   });
 });
 
-var transformerFunction = function(data, req) {
-  
+var transformerFunction = function(data, req) {  
   data = data.toString().replace(':'+localPort, ':'+proxyPort);
-  console.log(data);
   return new Buffer(data);
 };
 
