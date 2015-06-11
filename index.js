@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 
 var os = require('os'),
-    proxy = require('http-proxy'),
+    http = require('http'),
+    httpProxy = require('http-proxy'),
+    connect = require('connect'),
+    transformerProxy = require('transformer-proxy'),
     interfaces = os.networkInterfaces(),
     pkg = require('./package'),
     ver = pkg.version,
@@ -34,10 +37,31 @@ Object.keys(interfaces).forEach(function(name) {
   });
 });
 
-proxy.createProxyServer({
+var transformerFunction = function(data, req) {
+  
+  data = data.toString().replace(':'+localPort, ':'+proxyPort);
+  console.log(data);
+  return new Buffer(data);
+};
+
+
+var app = connect();
+var proxy = httpProxy.createProxyServer({
   target: 'http://localhost:' + localPort,
   xfwd: true,
   changeOrigin: true
-}).listen(proxyPort, function() {
+});
+
+proxy.on('proxyReq', function(proxyReq, req, res, options) {
+  proxyReq.setHeader('Accept-Encoding', 'identity');
+});
+
+app.use(transformerProxy(transformerFunction), {match : /\.(asp)/});
+
+app.use(function(req, res) {
+  proxy.web(req, res);
+});
+
+http.createServer(app).listen(proxyPort, function() {
   console.log('Listening... [ press Control-C to exit ]');
 });
