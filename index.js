@@ -54,6 +54,7 @@ var proxy = httpProxy.createProxyServer({
 
 proxy.on('proxyReq', function(proxyReq, req, res, options) {
   proxyReq.setHeader('Accept-Encoding', 'identity');
+  proxyReq.setHeader('Content-Type', 'text/html; charset=utf-8');
 });
 
 app.use(transformerProxy(transformerFunction), {match : /\.(asp)/});
