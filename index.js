@@ -59,10 +59,15 @@ var proxy = httpProxy.createProxyServer({
 
 app.use(function(req, res) {
   var parsed = url.parse(req.url);
-  if(parsed.pathname.match(/([^\.\?])+[^\/]$/)) {
+  console.log('PRE: ' + parsed.pathname);
+  
+  if(parsed.pathname === '' || parsed.pathname.match(/^([^\.\?]*)[^\/]$/)) {
       parsed.protocol = 'http';
       parsed.host = req.headers.host;
       parsed.pathname += '/';
+      
+      console.log('POST: ' + parsed.pathname);
+      
       res.writeHead(301, {Location: url.format(parsed)});
       res.end();
   } else {
