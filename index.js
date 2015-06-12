@@ -57,7 +57,16 @@ var proxy = httpProxy.createProxyServer({
 //app.use(transformerProxy(transformerFunction), {match : /\.(asp)/});
 
 app.use(function(req, res) {
-  proxy.web(req, res);
+  var parsed = url.parse(req.url);
+  if(parsed.pathname.match(/([^\.\?])+[^\/]$/)) {
+      parsed.protocol = 'http';
+      parsed.host = req.headers.host;
+      parsed.pathname += '/';
+      res.writeHead(301, {Location: url.format(parsed)});
+      res.end();
+  } else {
+      proxy.web(req, res);
+  }    
 });
 
 http.createServer(app).listen(proxyPort, function() {
