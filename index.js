@@ -10,6 +10,7 @@ var os = require('os'),
     pkg = require('./package'),
     ver = pkg.version,
     url = require('url'),
+    encoding = require("encoding"),
     exit = function() {
       console.log('Usage example:\n %s 51123 to 3000', Object.keys(pkg.bin)[0]);
       process.exit();
@@ -35,6 +36,7 @@ Object.keys(interfaces).forEach(function(name) {
   interfaces[name].filter(function(item) {
     return item.family == 'IPv4' && !item.internal;
   }).forEach(function(item) {
+    name = encoding.convert(name, "Latin_1");
     console.log("- %s: %s:%s", name, item.address, proxyPort);
   });
 });
@@ -59,33 +61,32 @@ var proxy = httpProxy.createProxyServer({
 
 app.use(function(req, res) {
   var parsed = url.parse(req.url);
-  console.log('[pre-routing]: ' + parsed.pathname);
   
+  // Corrixir problemas coa redirección de IIS que engade automaticamente
+  // se non existe unha barra final nos directorios
   if(parsed.pathname === '' || parsed.pathname.match(/^([^\.\?]*)[^\/]$/)) {
-      parsed.protocol = 'http';
-      parsed.host = req.headers.host;
-      parsed.pathname += '/';
-      
-      console.log('[post-routing]: ' + parsed.pathname);
-      
-      res.writeHead(301, {Location: url.format(parsed)});
-      res.end();
-  } else {      
+    parsed.protocol = 'http';
+    parsed.host = req.headers.host;
+    parsed.pathname += '/';     
+    res.writeHead(301, {Location: url.format(parsed)});
+    res.end();      
+  } else {
+    
+    // Corrixir posible petición a un ficheiro con barra final
     if (parsed.pathname.match(/.*?\.[a-z]{3}.*?[\/]$/)) {
       parsed.protocol = 'http';
       parsed.host = req.headers.host;
-      parsed.pathname = parsed.pathname.replace(/(.*?)\/$/, '$1');
-      
-      console.log('[post-routing]: ' + parsed.pathname);
-      
+      parsed.pathname = parsed.pathname.replace(/(.*?)\/$/, '$1');      
       res.writeHead(301, {Location: url.format(parsed)});
-      res.end();
-    } else {
+      res.end();    
+    } else {      
+      // Se non hai erros anteriores facer de proxy
       proxy.web(req, res);
-    }
+    }  
   }
+  
 });
 
 http.createServer(app).listen(proxyPort, function() {
-  console.log('Listening... [ press Control-C to exit ]');
+  console.log('Escoitando... [ preme Control-C para saír ]');
 });
