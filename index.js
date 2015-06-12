@@ -9,6 +9,7 @@ var os = require('os'),
     interfaces = os.networkInterfaces(),
     pkg = require('./package'),
     ver = pkg.version,
+    url = require('url'),
     exit = function() {
       console.log('Usage example:\n %s 51123 to 3000', Object.keys(pkg.bin)[0]);
       process.exit();
