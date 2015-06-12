@@ -59,20 +59,31 @@ var proxy = httpProxy.createProxyServer({
 
 app.use(function(req, res) {
   var parsed = url.parse(req.url);
-  console.log('PRE: ' + parsed.pathname);
+  console.log('[pre-routing]: ' + parsed.pathname);
   
   if(parsed.pathname === '' || parsed.pathname.match(/^([^\.\?]*)[^\/]$/)) {
       parsed.protocol = 'http';
       parsed.host = req.headers.host;
       parsed.pathname += '/';
       
-      console.log('POST: ' + parsed.pathname);
+      console.log('[post-routing]: ' + parsed.pathname);
       
       res.writeHead(301, {Location: url.format(parsed)});
       res.end();
-  } else {
+  } else {      
+    if (parsed.pathname.match(/.*?\.[a-z]{3}.*?[\/]$/)) {
+      parsed.protocol = 'http';
+      parsed.host = req.headers.host;
+      parsed.pathname = parsed.pathname.replace(/(.*?)\/$/, '$1');
+      
+      console.log('[post-routing]: ' + parsed.pathname);
+      
+      res.writeHead(301, {Location: url.format(parsed)});
+      res.end();
+    } else {
       proxy.web(req, res);
-  }    
+    }
+  }
 });
 
 http.createServer(app).listen(proxyPort, function() {
