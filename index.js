@@ -38,14 +38,6 @@ Object.keys(interfaces).forEach(function(name) {
   });
 });
 
-var transformerFunction = function(data, req) {  
-  data = data.toString().replace(':'+localPort, ':'+proxyPort);
-  console.log(data);
-  //return new Buffer(data, 'utf-8');
-  return data;
-};
-
-
 var app = connect();
 var proxy = httpProxy.createProxyServer({
   target: 'http://localhost:' + localPort,
@@ -53,11 +45,16 @@ var proxy = httpProxy.createProxyServer({
   changeOrigin: true
 });
 
-proxy.on('proxyReq', function(proxyReq, req, res, options) {
-  proxyReq.setHeader('Accept-Encoding', 'identity');  
-});
+//proxy.on('proxyReq', function(proxyReq, req, res, options) {
+//  proxyReq.setHeader('Accept-Encoding', 'identity');  
+//});
 
-app.use(transformerProxy(transformerFunction), {match : /\.(asp)/});
+//var transformerFunction = function(data, req) {  
+//  data = data.toString().replace(':'+localPort, ':'+proxyPort);  
+//  return data; // new Buffer(data);
+//};
+
+//app.use(transformerProxy(transformerFunction), {match : /\.(asp)/});
 
 app.use(function(req, res) {
   proxy.web(req, res);
